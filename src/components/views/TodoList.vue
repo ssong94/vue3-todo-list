@@ -6,7 +6,7 @@
 
   <a-space direction="vertical">
     <a-input-search
-        v-model:value="searchInput"
+        m-model:value="searchInput"
         placeholder="검색"
         enter-button
         @keyup="changeValue"
@@ -43,23 +43,29 @@
 
     </a-input-group>
 
+    <a-checkbox v-for="todo in filterTodos" :key="todo.id" v-model:checked="todo.checked ">
 
-    <a-checkbox v-for="todo in filterTodos" :key="todo.id" v-model:checked="todo.checked ">{{ todo.text }}
+      <a-input-group v-if="isEditMode && editObj.id === todo.id" compact>
+        <a-input  @blur="isEditMode = false" v-model:value="editObj.text" show-count :maxlength="15" placeholder="" @keyup.enter="doEditTodo(todo)" style="width: calc(70% - 0px)" />
+        <a-button type="text">❌</a-button>
+      </a-input-group>
 
-      <a-popconfirm
-          title="삭제하시겠어요?"
-          ok-text="Yes"
-          cancel-text="No"
-          @confirm="deleteTodo(todo.id)"
-      >
-        <a-button type="text" danger>🗑️</a-button>
-      </a-popconfirm>
-
-
+      <div v-else>
+        {{ todo.text }}
+        <a-button type="text" @click.prevent="goEditMode(todo)">✏️️</a-button>
+        <a-popconfirm
+            title="삭제하시겠어요?"
+            ok-text="Yes"
+            cancel-text="No"
+            @confirm="deleteTodo(todo.id)"
+        >
+          <a-button type="text" danger>🗑️</a-button>
+        </a-popconfirm>
+      </div>
 
     </a-checkbox>
 
-    <a-empty v-if="todos.length === 0" />
+    <a-empty v-show="todos.length === 0" />
 
 
   </a-space>
@@ -73,7 +79,7 @@
 <script setup>
 
 
-import {computed, ref} from "vue";
+import {computed, reactive, ref} from "vue";
 import { message } from 'ant-design-vue'
 
 const todos = ref([
@@ -98,7 +104,11 @@ const todos = ref([
 
 const searchInput = ref('');
 const todoInput = ref('');
-
+const isEditMode = ref(false)
+const editObj = reactive({
+  id: 0,
+  text: ''
+})
 
 const checkedCount = computed(() => {
   let count = 0;
@@ -144,6 +154,26 @@ const addNewTodo = () => {
   }
 
   clearTodoInput();
+}
+
+const doEditTodo = (obj) => {
+  const id = obj.id
+
+
+  filterTodos.value.forEach(obj => {
+    if(obj.id === id) {
+      obj.text = editObj.text;
+    }
+  })
+
+  isEditMode.value = false
+}
+
+const goEditMode = obj => {
+  isEditMode.value = true
+  editObj.id = obj.id
+  editObj.text = obj.text;
+
 }
 
 const createTodoObj = text => {
