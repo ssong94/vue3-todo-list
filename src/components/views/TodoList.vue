@@ -43,11 +43,11 @@
 
     </a-input-group>
 
-    <a-checkbox v-for="todo in filterTodos" :key="todo.id" v-model:checked="todo.checked ">
+    <a-checkbox @change="changeStatus(todo, $event)" v-for="todo in filterTodos" :key="todo.id" v-model:checked="todo.checked ">
 
       <a-input-group v-if="isEditMode && editObj.id === todo.id" compact>
         <a-input  @blur="isEditMode = false" v-model:value="editObj.text" show-count :maxlength="15" placeholder="" @keyup.enter="doEditTodo(todo)" style="width: calc(70% - 0px)" />
-        <a-button type="text">❌</a-button>
+        <a-button type="text" @click.prevent="isEditMode = false">❌</a-button>
       </a-input-group>
 
       <div v-else>
@@ -66,6 +66,7 @@
     </a-checkbox>
 
     <a-empty v-show="todos.length === 0" />
+    <a-pagination v-show="todos.length !== 0" v-model:pageSize=pageSize v-model:current="currentPage" :total="totalPageCount" />
 
 
   </a-space>
@@ -79,36 +80,24 @@
 <script setup>
 
 
-import {computed, reactive, ref} from "vue";
+import {computed, reactive, ref, watch} from "vue";
 import { message } from 'ant-design-vue'
+import axios from "axios";
 
-const todos = ref([
-  {
-    id: 1,
-    text: 'test-todo1 할일1 와',
-    checked: false
-  },
-  {
-    id:2,
-    text: 'test-todo2 할일2',
-    checked: true
-  },
-  {
-    id:3,
-    text: 'test-todo3 할일3',
-    checked: false
-  }
-]
-)
+const todos = ref([])
 
-
+const pageSize = ref(5);
+const totalPageCount = ref(500);
 const searchInput = ref('');
 const todoInput = ref('');
 const isEditMode = ref(false)
+const currentPage = ref(1);
 const editObj = reactive({
   id: 0,
   text: ''
 })
+
+const url = 'http://localhost:3001/todos'
 
 const checkedCount = computed(() => {
   let count = 0;
@@ -116,6 +105,21 @@ const checkedCount = computed(() => {
   return count;
 })
 
+watch(pageSize, () => {
+  console.log('pageSize', pageSize.value);
+});
+
+watch(currentPage, async() => {
+  // const data = await axios.get('https://jsonplaceholder.typicode.com/posts');
+  // console.log(data);
+})
+
+const getTodos = async () => {
+  const res = await axios.get(url)
+  todos.value = res.data;
+}
+
+getTodos();
 
 const filterTodos = computed(() => {
 
@@ -139,6 +143,7 @@ const changeValue = (e) => {
 }
 
 
+
 const addNewTodo = () => {
 
   const text = todoInput.value.trim();
@@ -150,7 +155,10 @@ const addNewTodo = () => {
   if(hasTextInTodos(text)) {
     alert(`"${text}"가 이미 존재해요.`)
   } else {
-    todos.value.push( createTodoObj(text) )
+
+    axios.post(url, createTodoObj(text))
+        .then(getTodos)
+
   }
 
   clearTodoInput();
@@ -159,14 +167,31 @@ const addNewTodo = () => {
 const doEditTodo = (obj) => {
   const id = obj.id
 
+  const updateData = {
+    id,
+    text: editObj.text
+  }
 
-  filterTodos.value.forEach(obj => {
-    if(obj.id === id) {
-      obj.text = editObj.text;
-    }
-  })
+  updateTodo(updateData);
 
   isEditMode.value = false
+}
+
+const changeStatus = (todo, e) => {
+  const checked = e.target.checked;
+
+  const updateData = {
+    id: todo.id,
+    checked: checked
+  }
+
+  updateTodo(updateData)
+}
+
+const updateTodo = (obj) => {
+  axios.patch(`${url}/${obj.id}`, obj)
+      .then(getTodos)
+      .catch(() => alert('오류 발생'))
 }
 
 const goEditMode = obj => {
@@ -187,8 +212,10 @@ const createTodoObj = text => {
 const hasTextInTodos = value => todos.value.some(el => el.text === value);
 
 const deleteTodo = (id) => {
-  todos.value = todos.value.filter(obj => obj.id !== id);
-  confirm();
+  axios.delete(`${url}/${id}`)
+      .then(confirm)
+      .then(getTodos)
+      .catch(() => alert('error'))
 }
 
 
