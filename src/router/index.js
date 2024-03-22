@@ -1,4 +1,4 @@
-import { createMemoryHistory, createRouter } from 'vue-router'
+import { createRouter, createWebHistory} from 'vue-router'
 
 import Home from '@/components/views/HelloWorld.vue'
 import TodoList from '@/components/views/TodoList.vue'
@@ -11,7 +11,8 @@ const routes = [
 ]
 
 const router = createRouter({
-    history: createMemoryHistory(),
+    // history: createMemoryHistory(), 이걸로 하면 url 변경이 일어나지 않는다.
+    history: createWebHistory(),
     routes,
 })
 
