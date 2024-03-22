@@ -17,9 +17,6 @@
       <a-menu-item key="3">
         <RouterLink to="test">테스트 페이지</RouterLink>
       </a-menu-item>
-      <a-menu-item key="3">
-      <button @click="movePage('/')">Home 으로 이동</button>
-      </a-menu-item>
     </a-menu>
   </a-layout-header>
 
@@ -28,10 +25,5 @@
 
 
 <script setup>
-import {useRouter} from 'vue-router'
 
-const router = useRouter()
-const movePage = (uri) => {
-  router.push(uri)
-}
 </script>
