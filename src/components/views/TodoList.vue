@@ -1,8 +1,10 @@
 <template>
-  <div class="space-align-container">
 
-  <div class="center">Todo List</div>
-  <br/>
+  <a-layout-content :style="{ margin: '24px 16px 0', overflow: 'initial', textAlign: 'center'}">
+
+    <a-divider>
+      <a-typography-title>Todo List</a-typography-title>
+    </a-divider>
 
   <a-space direction="vertical">
     <a-input-search
@@ -12,25 +14,26 @@
         @keyup="changeValue"
     />
 
-    <a-divider/>
-
-    <a-row :gutter="16">
-      <a-col :span="12">
-        <a-statistic title="진행상황" :value="checkedCount" class="demo-class">
-          <template #suffix>
+    <a-divider >
+      <a-row :gutter="16">
+        <a-col :span="12">
+          <a-statistic title="진행상황" :value="checkedCount" class="demo-class">
+            <template #suffix>
             <span>
               /
               {{ todos.length }}
             </span>
-          </template>
-        </a-statistic>
-      </a-col>
-    </a-row>
+            </template>
+          </a-statistic>
+        </a-col>
+      </a-row>
+    </a-divider>
 
-    <a-input-group compact>
+
+    <a-input-group size="large">
       <a-input-search
           v-model:value="todoInput"
-          placeholder="할일"
+          placeholder="할 일을 입력해 주세요."
           size="large"
           show-count :maxlength="15"
           @keyup.enter="addNewTodo"
@@ -43,37 +46,64 @@
 
     </a-input-group>
 
-    <a-checkbox @change="changeStatus(todo, $event)" v-for="todo in filterTodos" :key="todo.id" v-model:checked="todo.checked ">
 
-      <a-input-group v-if="isEditMode && editObj.id === todo.id" compact>
-        <a-input  @blur="isEditMode = false" v-model:value="editObj.text" show-count :maxlength="15" placeholder="" @keyup.enter="doEditTodo(todo)" style="width: calc(70% - 0px)" />
-        <a-button type="text" @click.prevent="isEditMode = false">❌</a-button>
-      </a-input-group>
+    <a-list v-if="filterTodos.length !== 0" item-layout="horizontal" :data-source="filterTodos">
+      <template #renderItem="{ item }">
+        <a-list-item>
+<!--          <template #actions>-->
+<!--            <a-space direction="horizontal">-->
+<!--              <a-button type="link" size="small">✏️</a-button>-->
+<!--            <a-button type="link" size="small">❌</a-button>-->
+<!--            </a-space>-->
+<!--          </template>-->
+          <a-list-item-meta
+              description=""
+          >
+            <template #title>
 
-      <div v-else>
-        {{ todo.text }}
-        <a-button type="text" @click.prevent="goEditMode(todo)">✏️️</a-button>
-        <a-popconfirm
-            title="삭제하시겠어요?"
-            ok-text="Yes"
-            cancel-text="No"
-            @confirm="deleteTodo(todo.id)"
-        >
-          <a-button type="text" danger>🗑️</a-button>
-        </a-popconfirm>
-      </div>
+              <a-input-group v-if="isEditMode && editObj.id === item.id" compact>
+                <a-input  @blur="isEditMode = false" v-model:value="editObj.text" show-count :maxlength="15" placeholder="" @keyup.enter="doEditTodo(item)" style="width: calc(100% - 50px)" />
+                <a-button type="link" @click.prevent="isEditMode = false">❌</a-button>
+              </a-input-group>
 
-    </a-checkbox>
 
-    <a-empty v-show="todos.length === 0" />
-    <a-pagination v-show="todos.length !== 0" v-model:pageSize=pageSize v-model:current="currentPage" :total="totalPageCount" />
+              <a-checkbox v-else @change="changeStatus(item, $event)" v-model:checked="item.checked ">
+
+
+                  {{ item.text }}
+                  <a-button type="text" @click.prevent="goEditMode(item)">✏️️</a-button>
+                  <a-popconfirm
+                      title="삭제하시겠어요?"
+                      ok-text="Yes"
+                      cancel-text="No"
+                      @confirm="deleteTodo(item.id)"
+                  >
+                    <a-button type="link" danger size="small">❌️</a-button>
+                  </a-popconfirm>
+
+              </a-checkbox>
+
+<!--              <a-typography-paragraph-->
+<!--                  v-model:content=item.text-->
+<!--                  :editable="{ triggerType: ['text'], maxlength: 15, onEnd: (text) => console.log(text), onStart: () => console.log('dd')}"-->
+<!--              >-->
+<!--                <template #editableTooltip>수정하기</template>-->
+<!--              </a-typography-paragraph>-->
+
+            </template>
+          </a-list-item-meta>
+        </a-list-item>
+      </template>
+      <a-pagination v-model:pageSize=pageSize v-model:current="currentPage" :total="totalPageCount" />
+    </a-list>
+    <a-empty v-else />
+
+
 
 
   </a-space>
 
-
-
-  </div>
+  </a-layout-content>
 </template>
 
 
