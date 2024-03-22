@@ -62,7 +62,7 @@
             <template #title>
 
               <a-input-group v-if="isEditMode && editObj.id === item.id" compact>
-                <a-input  @blur="isEditMode = false" v-model:value="editObj.text" show-count :maxlength="15" placeholder="" @keyup.enter="doEditTodo(item)" style="width: calc(100% - 50px)" />
+                <a-input  @blur="isEditMode = false" v-model:value="editObj.text" show-count :maxlength="15" placeholder="" @keyup.enter="doEditTodo(item)" style="width: calc(100% - 60px)" />
                 <a-button type="link" @click.prevent="isEditMode = false">❌</a-button>
               </a-input-group>
 
