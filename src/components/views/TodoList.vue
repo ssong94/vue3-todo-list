@@ -69,7 +69,6 @@
 
               <a-checkbox v-else @change="changeStatus(item, $event)" v-model:checked="item.checked ">
 
-
                   {{ item.text }}
                   <a-button type="text" @click.prevent="goEditMode(item)">✏️️</a-button>
                   <a-popconfirm
@@ -106,6 +105,7 @@
 import {computed, reactive, ref, watch} from "vue";
 import { message } from 'ant-design-vue'
 import axios from "axios";
+import {useRouter} from "vue-router";
 
 const todos = ref([])
 const paging = reactive({
@@ -113,6 +113,7 @@ const paging = reactive({
   currentPage: 1,
   totalPageCount: 100
 })
+const router = useRouter()
 
 const searchInput = ref('');
 const todoInput = ref('');
@@ -130,24 +131,34 @@ const checkedCount = computed(() => {
   return count;
 })
 
+const getPagingParams = () => {
+  return {
+    _start: (paging.currentPage - 1) * paging.limit,
+    _limit: paging.limit
+  }
+}
+
 watch(() => [ paging.limit,paging.currentPage ], () => {
   getTodos()
+  changeUrl(getPagingParams())
 });
+
+const changeUrl = (data) => {
+  router.replace(`/todo-list${toQueryParams(data)}`)
+
+}
 
 const toQueryParams = params => '?' + new URLSearchParams(params).toString()
 
 const getTodos = async () => {
-  const params = {
-    _start: (paging.currentPage - 1) * paging.limit,
-    _limit: paging.limit
-  }
+  const params = getPagingParams();
 
   const res = await axios.get(`${url}${toQueryParams(params)}`)
-
   todos.value = res.data;
 }
 
 getTodos();
+
 
 const filterTodos = computed(() => {
 
@@ -226,7 +237,6 @@ const goEditMode = obj => {
   isEditMode.value = true
   editObj.id = obj.id
   editObj.text = obj.text;
-
 }
 
 const createTodoObj = text => {
