@@ -83,18 +83,11 @@
 
               </a-checkbox>
 
-<!--              <a-typography-paragraph-->
-<!--                  v-model:content=item.text-->
-<!--                  :editable="{ triggerType: ['text'], maxlength: 15, onEnd: (text) => console.log(text), onStart: () => console.log('dd')}"-->
-<!--              >-->
-<!--                <template #editableTooltip>수정하기</template>-->
-<!--              </a-typography-paragraph>-->
-
             </template>
           </a-list-item-meta>
         </a-list-item>
       </template>
-      <a-pagination v-model:pageSize=pageSize v-model:current="currentPage" :total="totalPageCount" />
+      <a-pagination v-model:pageSize=paging.limit v-model:current="paging.currentPage" :total="paging.totalPageCount" />
     </a-list>
     <a-empty v-else />
 
@@ -115,13 +108,15 @@ import { message } from 'ant-design-vue'
 import axios from "axios";
 
 const todos = ref([])
+const paging = reactive({
+  limit: 5,
+  currentPage: 1,
+  totalPageCount: 100
+})
 
-const pageSize = ref(5);
-const totalPageCount = ref(500);
 const searchInput = ref('');
 const todoInput = ref('');
 const isEditMode = ref(false)
-const currentPage = ref(1);
 const editObj = reactive({
   id: 0,
   text: ''
@@ -135,17 +130,20 @@ const checkedCount = computed(() => {
   return count;
 })
 
-watch(pageSize, () => {
-  console.log('pageSize', pageSize.value);
+watch(() => [ paging.limit,paging.currentPage ], () => {
+  getTodos()
 });
 
-watch(currentPage, async() => {
-  // const data = await axios.get('https://jsonplaceholder.typicode.com/posts');
-  // console.log(data);
-})
+const toQueryParams = params => '?' + new URLSearchParams(params).toString()
 
 const getTodos = async () => {
-  const res = await axios.get(url)
+  const params = {
+    _start: (paging.currentPage - 1) * paging.limit,
+    _limit: paging.limit
+  }
+
+  const res = await axios.get(`${url}${toQueryParams(params)}`)
+
   todos.value = res.data;
 }
 
