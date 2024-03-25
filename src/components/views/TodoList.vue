@@ -50,36 +50,32 @@
     <a-list v-if="filterTodos.length !== 0" item-layout="horizontal" :data-source="filterTodos">
       <template #renderItem="{ item }">
         <a-list-item>
-<!--          <template #actions>-->
-<!--            <a-space direction="horizontal">-->
-<!--              <a-button type="link" size="small">✏️</a-button>-->
-<!--            <a-button type="link" size="small">❌</a-button>-->
-<!--            </a-space>-->
-<!--          </template>-->
-          <a-list-item-meta
-              description=""
-          >
+          <template #actions>
+
+            <a-button v-if="isEditMode && editObj.id === item.id" type="link" @click.prevent="isEditMode = false">❌</a-button>
+
+            <a-space v-else direction="horizontal">
+              <a-button type="text" @click.prevent="goEditMode(item)">✏️️</a-button>
+              <a-popconfirm
+                  title="삭제하시겠어요?"
+                  ok-text="Yes"
+                  cancel-text="No"
+                  @confirm="deleteTodo(item.id)"
+              >
+                <a-button type="link" danger size="small">🗑️</a-button>
+              </a-popconfirm>
+            </a-space>
+
+          </template>
+          <a-list-item-meta description="">
             <template #title>
 
               <a-input-group v-if="isEditMode && editObj.id === item.id" compact>
                 <a-input  @blur="isEditMode = false" v-model:value="editObj.text" show-count :maxlength="15" placeholder="" @keyup.enter="doEditTodo(item)" style="width: calc(100% - 60px)" />
-                <a-button type="link" @click.prevent="isEditMode = false">❌</a-button>
               </a-input-group>
 
-
               <a-checkbox v-else @change="changeStatus(item, $event)" v-model:checked="item.checked ">
-
                   {{ item.text }}
-                  <a-button type="text" @click.prevent="goEditMode(item)">✏️️</a-button>
-                  <a-popconfirm
-                      title="삭제하시겠어요?"
-                      ok-text="Yes"
-                      cancel-text="No"
-                      @confirm="deleteTodo(item.id)"
-                  >
-                    <a-button type="link" danger size="small">❌️</a-button>
-                  </a-popconfirm>
-
               </a-checkbox>
 
             </template>
